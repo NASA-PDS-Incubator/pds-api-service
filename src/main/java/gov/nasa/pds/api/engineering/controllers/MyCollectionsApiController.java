@@ -3,9 +3,9 @@ package gov.nasa.pds.api.engineering.controllers;
 
 import gov.nasa.pds.api.base.CollectionsApi;
 
-import gov.nasa.pds.model.Collections;
-import gov.nasa.pds.model.Metadata;
-import gov.nasa.pds.model.Collection;
+import gov.nasa.pds.model.Products;
+import gov.nasa.pds.model.Summary;
+import gov.nasa.pds.model.Product;
 import gov.nasa.pds.model.ErrorMessage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,53 +47,63 @@ public class MyCollectionsApiController implements CollectionsApi {
         this.objectMapper = objectMapper;
         this.request = request;
     }
+    
+    public ResponseEntity<Product> collectionsByLidvid(@ApiParam(value = "lidvid (urn)",required=true) @PathVariable("lidvid") String lidvid
+    		) {
+    		        String accept = request.getHeader("Accept");
+    		        if (accept != null && accept.contains("application/json")) {
+    		            try {
+    		                return new ResponseEntity<Product>(objectMapper.readValue("{\n  \"stop_date_time\" : \"stop_date_time\",\n  \"observing_system_components\" : [ null, null ],\n  \"metadata\" : {\n    \"creation_date_time\" : \"creation_date_time\",\n    \"version\" : \"version\",\n    \"update_date_time\" : \"update_date_time\",\n    \"label_url\" : \"label_url\"\n  },\n  \"description\" : \"description\",\n  \"investigations\" : [ {\n    \"ref\" : \"ref\",\n    \"description\" : \"description\",\n    \"title\" : \"title\",\n    \"type\" : \"type\"\n  }, {\n    \"ref\" : \"ref\",\n    \"description\" : \"description\",\n    \"title\" : \"title\",\n    \"type\" : \"type\"\n  } ],\n  \"id\" : \"id\",\n  \"type\" : \"type\",\n  \"title\" : \"title\",\n  \"start_date_time\" : \"start_date_time\",\n  \"targets\" : [ null, null ],\n  \"properties\" : {\n    \"key\" : { }\n  }\n}", Product.class), HttpStatus.NOT_IMPLEMENTED);
+    		            } catch (IOException e) {
+    		                log.error("Couldn't serialize response for content type application/json", e);
+    		                return new ResponseEntity<Product>(HttpStatus.INTERNAL_SERVER_ERROR);
+    		            }
+    		        }
 
-    public ResponseEntity<Collections> getCollection(
-    		@ApiParam(value = "offset in matching result list, for pagination") @Valid @RequestParam(value = "start", required = false) Integer start,
-    		@ApiParam(value = "maximum number of matching results returned, for pagination") @Valid @RequestParam(value = "limit", required = false) Integer limit,
-    		@ApiParam(value = "search query") @Valid @RequestParam(value = "q", required = false) String q,
-    		@ApiParam(value = "returned fields, syntax field0,field1") @Valid @RequestParam(value = "fields", required = false) List<String> fields,
-    		@ApiParam(value = "sort results, syntax asc(field0),desc(field1)") @Valid @RequestParam(value = "sort-by", required = false) List<String> sortBy) {
-        String accept = request.getHeader("Accept");
+    		        return new ResponseEntity<Product>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+
+    public ResponseEntity<Products> getCollection(@ApiParam(value = "offset in matching result list, for pagination", defaultValue = "0") @Valid @RequestParam(value = "start", required = false, defaultValue="0") Integer start
+    		,@ApiParam(value = "maximum number of matching results returned, for pagination", defaultValue = "100") @Valid @RequestParam(value = "limit", required = false, defaultValue="100") Integer limit
+    		,@ApiParam(value = "search query, complex query uses eq,ne,gt,ge,lt,le,(,),not,and,or. Properties are named as in 'properties' attributes, literals are strings between \" or numbers. Detailed query specification is available at https://bit.ly/393i1af") @Valid @RequestParam(value = "q", required = false) String q
+    		,@ApiParam(value = "returned fields, syntax field0,field1") @Valid @RequestParam(value = "fields", required = false) List<String> fields
+    		,@ApiParam(value = "sort results, syntax asc(field0),desc(field1)") @Valid @RequestParam(value = "sort", required = false) List<String> sort
+    		,@ApiParam(value = "only return the summary, useful to get the list of available properties", defaultValue = "false") @Valid @RequestParam(value = "only-summary", required = false, defaultValue="false") Boolean onlySummary
+    		) {
+    	String accept = request.getHeader("Accept");
+        
+        // Example of implementation of a controller that one can use to implement the PDS API
+        
         log.info("accept value is " + accept);
         if (accept != null 
         		&& (accept.contains("application/json") || accept.contains("text/html"))) {
             	
-        	Collections collections = new Collections();
+        	Products collections = new Products();
         	
-        	Metadata metadata = new Metadata();
+        	Summary summary = new Summary();
         	
-        	metadata.setQ("");
-        	metadata.setStart(0);
-        	metadata.setLimit(100);
+        	summary.setQ("");
+        	summary.setStart(0);
+        	summary.setLimit(100);
         	List<String> sortFields = Arrays.asList();
-        	metadata.setSort(sortFields);
+        	summary.setSort(sortFields);
         	
-        	collections.setMetadata(metadata);
+        	collections.setSummary(summary);
         	
-        	Collection collection = new Collection();
+        	Product collection = new Product();
         	collection.id("urn:nasa:pds:orex.ocams:data_raw");
         	collection.title("OSIRIS-REx OCAMS raw science image data products");
         	collection.description("This collection contains the raw (processing level 0) science image data products produced by the OCAMS instrument onboard the OSIRIS-REx spacecraft.");
-
-        	List<String> intruments = Arrays.asList("urn:nasa:pds:context:instrument:ocams.orex");
-        	collection.instruments(intruments);
-        	
-        	List<String> targets = Arrays.asList("(101955) BENNU");        	
-        	collection.targets(targets);
-        	
-        	
-        	List<String> imgResolutions = Arrays.asList("12px");        	        	
-        	collection.putOptionalPropertiesItem("img:resolution", imgResolutions);
         	
         	collections.addDataItem(collection);
         	
         			
         	
-            return new ResponseEntity<Collections>(collections, HttpStatus.OK);
+            return new ResponseEntity<Products>(collections, HttpStatus.OK);
         
         }
-        else return new ResponseEntity<Collections>(HttpStatus.NOT_IMPLEMENTED);
+        else return new ResponseEntity<Products>(HttpStatus.NOT_IMPLEMENTED);
     }
 
 }
