@@ -6,6 +6,8 @@ This project is a template implementation of the PDS federated API using the sta
 
 It implements a very simple collections end-point complying with the specification (see https://app.swaggerhub.com/organizations/PDS_APIs)
 
+Update controllers as shown as an example in `src/main/java/gov/nasa/pds/api/engineering/controllers/MyCollectionsApiController.java`
+
 
 ## Deployment
 
